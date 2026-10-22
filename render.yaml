@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: tiktok-downloader
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # 1 worker keeps jobs/tickets in one process; 16 threads so streaming downloads
+    # can't starve the /healthz check.
+    startCommand: gunicorn app:app --workers 1 --threads 16 --timeout 120 --worker-tmp-dir /dev/shm
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: PROXY_HOPS        # proxies in front of the app (see README > Rate limit)
+        value: "2"
